@@ -1,0 +1,11 @@
+csr:
+  key:
+    algo: sm2
+    size: 256
+  cn: hxy
+  hosts:
+    - www.bill.com
+  ca:
+    pathlen: 1
+    expiry: 1
+URL: http://127.0.0.1
