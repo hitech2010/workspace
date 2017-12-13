@@ -10,7 +10,8 @@ import (
 
 func main() {
 	tlsConfig := &tls.Config{}
-	tlsConfig.InsecureSkipVerify = true
+	tlsConfig.InsecureSkipVerify = false
+	tlsConfig.ServerName = "server"
 	conn, err := tls.Dial("tcp", ":8888", tlsConfig)
 	if err != nil {
 		log.Fatalln(err.Error())
