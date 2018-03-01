@@ -1,7 +1,9 @@
 #include <openssl/evp.h>
-#include <stdlib.h>
+#include <string.h>
 
 #define SHA512_DIGEST_LENGTH 64 
+
+void TEST_EVP_SHA512();
 
 static void hex_print(const char *name, const unsigned char *buf, size_t len){
     size_t i;
@@ -30,6 +32,7 @@ void TEST_EVP_SHA512(){
     EVP_Digest("hello", 5, result2, NULL, EVP_sha512(), NULL);
     hex_print("sha512", result2, SHA512_DIGEST_LENGTH);
 }
-void main(){
+int main(){
     TEST_EVP_SHA512();
+    return 0;
 }
