@@ -1,4 +1,3 @@
-
 /*****************************************
 	pkcs11 engine demo
 
@@ -12,6 +11,8 @@
 #include <openssl/evp.h>
 #include <openssl/bn.h>
 #include <openssl/engine.h>
+#include <openssl/rsa.h>
+#include <openssl/ossl_typ.h>
 #include "eng_p11.h"
 
 
@@ -80,9 +81,9 @@ static int p11_private_decrypt(int len, const unsigned char *from,
     return 0;
 }
 
-static RSA_METHOD p11_rsa =
+static RSA_METHOD *p11_rsa =
 {
-    "eboy's pkcs11 PKCS#1 RSA",
+		"eboy's pkcs11 PKCS#1 RSA",
         p11_public_encrypt,
         NULL,
         NULL,

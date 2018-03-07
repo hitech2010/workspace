@@ -52,7 +52,7 @@ void test()
 	rsa = RSA_generate_key(1024,RSA_F4,NULL,NULL);
 	rv = EVP_PKEY_set1_RSA(evpKey,rsa);
 	
-	rv = EVP_PKEY_encrypt(buf,buf,128,evpKey);
+	//rv = EVP_PKEY_encrypt(buf,buf,128,evpKey);
 	
 	rv = ENGINE_finish(p11_engine);
 	
