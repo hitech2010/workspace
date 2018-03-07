@@ -5,7 +5,7 @@
 #include <openssl/evp.h>
 #include <openssl/bn.h>
 #include <openssl/engine.h>
-#include "eng_p11.h"
+#include "eng_sansec.h"
 
 static void display_engine_list()
 {
@@ -30,33 +30,33 @@ static void display_engine_list()
 
 void test()
 {
-	ENGINE *p11_engine = NULL;
+	ENGINE *sansec_engine = NULL;
 	int rv;
 	unsigned char buf[1024];
 	RSA *rsa;
 	EVP_PKEY *evpKey;
 	
-	ENGINE_load_pkcs11();
+	ENGINE_load_sansec();
 	//display_engine_list();
 	
-	p11_engine = ENGINE_by_id("pkcs11");
-	if(p11_engine == NULL)
+	sansec_engine = ENGINE_by_id("sansec");
+	if(sansec_engine == NULL)
 	{
-		printf("get pkcs11 engine Error\n");
+		printf("get sansec engine Error\n");
 		return ;
 	}
-	printf("get pkcs11 engine OK.name:%s\n",ENGINE_get_name(p11_engine));
-	ENGINE_register_RSA(p11_engine);
-	rv = ENGINE_set_default(p11_engine,ENGINE_METHOD_ALL);
+	printf("get sansec engine OK.name:%s\n",ENGINE_get_name(sansec_engine));
+	ENGINE_register_RSA(sansec_engine);
+	rv = ENGINE_set_default(sansec_engine,ENGINE_METHOD_ALL);
 	evpKey = EVP_PKEY_new();
 	rsa = RSA_generate_key(1024,RSA_F4,NULL,NULL);
 	rv = EVP_PKEY_set1_RSA(evpKey,rsa);
 	
 	//rv = EVP_PKEY_encrypt(buf,buf,128,evpKey);
 	
-	rv = ENGINE_finish(p11_engine);
+	rv = ENGINE_finish(sansec_engine);
 	
-	rv = ENGINE_free(p11_engine);
+	rv = ENGINE_free(sansec_engine);
 	printf("test end.\n");
 	return;
 }
