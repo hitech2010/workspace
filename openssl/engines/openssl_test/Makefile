@@ -13,13 +13,17 @@ OPENSSL_LIBS_LOCATION=-L /usr/local/lib
 CFLAGS = $(OPENSSL_INCS_LOCATION)
 LDFLAGS = $(OPENSSL_LIBS_LOCATION) -lssl -lcrypto
 
-all: sm3 
+.PHONY: all
+all: sm3 aes
 
 sm3: sm3.o
+aes: aes.o
 
 sm3:
+	$(CC) $(CFLAGS) -o $@ $< $(LDFLAGS)
+aes:
 	$(CC) $(CFLAGS) -o $@ $< $(LDFLAGS)
 
 .PHONY: clean
 clean:
-	rm -rf *.o sm3
+	rm -rf *.o sm3 aes
