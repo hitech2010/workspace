@@ -1,0 +1,149 @@
+#
+# OpenSSL/engines/Makefile
+#
+
+DIR=	engines
+TOP=	/usr/local/lib
+CC=	cc
+INCLUDES= -I/usr/local/include/openssl
+CFLAG=-g
+MAKEFILE=	Makefile
+AR=		ar r
+ENGDIRS= ccgost
+
+PEX_LIBS=
+EX_LIBS=
+
+CFLAGS= $(INCLUDES) $(CFLAG)
+
+GENERAL=Makefile engines.com install.com engine_vector.mar
+TEST=
+APPS=
+
+LIB=$(TOP)/libcrypto.a
+LIBNAMES= chil
+
+LIBSRC= e_chil.c
+LIBOBJ= e_chil.o 
+
+SRC= $(LIBSRC)
+
+EXHEADER= 
+HEADER=	e_chil_err.c e_chil_err.h
+
+ALL=    $(GENERAL) $(SRC) $(HEADER)
+
+all:	lib subdirs
+
+lib:	$(LIBOBJ)
+	@if [ -n "$(SHARED_LIBS)" ]; then \
+		set -e; \
+		for l in $(LIBNAMES); do \
+			$(MAKE) -f ../Makefile.shared -e \
+				LIBNAME=$$l LIBEXTRAS=e_$$l.o \
+				LIBDEPS='-L.. -lcrypto $(EX_LIBS)' \
+				link_o.$(SHLIB_TARGET); \
+		done; \
+	else \
+		$(AR) $(LIB) $(LIBOBJ); \
+		$(RANLIB) $(LIB) || echo Never mind.; \
+	fi; \
+	touch lib
+
+subdirs:
+	echo $(EDIRS)
+	@target=all; $(RECURSIVE_MAKE)
+
+files:
+	$(PERL) $(TOP)/util/files.pl Makefile >> $(TOP)/MINFO
+	@target=files; $(RECURSIVE_MAKE)
+
+links:
+	@target=links; $(RECURSIVE_MAKE)
+
+# XXXXX This currently only works on systems that use .so as suffix
+# for shared libraries as well as for Cygwin which uses the
+# dlfcn_name_converter and therefore stores the engines with .so suffix, too.
+# XXXXX This was extended to HP-UX dl targets, which use .sl suffix.
+# XXXXX This was extended to mingw targets, which use eay32.dll suffix without lib as prefix.
+install:
+	@[ -n "$(INSTALLTOP)" ] # should be set by top Makefile...
+	@if [ -n "$(SHARED_LIBS)" ]; then \
+		set -e; \
+		$(PERL) $(TOP)/util/mkdir-p.pl $(INSTALL_PREFIX)$(INSTALLTOP)/$(LIBDIR)/engines; \
+		for l in $(LIBNAMES); do \
+			( echo installing $$l; \
+			  pfx=lib; \
+			  if expr "$(PLATFORM)" : "Cygwin" >/dev/null; then \
+				sfx=".so"; \
+				cp cyg$$l.dll $(INSTALL_PREFIX)$(INSTALLTOP)/$(LIBDIR)/engines/$$pfx$$l$$sfx.new; \
+			  else \
+				case "$(CFLAGS)" in \
+				*DSO_BEOS*)	sfx=".so";;	\
+				*DSO_DLFCN*)	sfx=`expr "$(SHLIB_EXT)" : '.*\(\.[a-z][a-z]*\)' \| ".so"`;;	\
+				*DSO_DL*)	sfx=".sl";;	\
+				*DSO_WIN32*)	sfx="eay32.dll"; pfx=;;	\
+				*)		sfx=".bad";;	\
+				esac; \
+				cp $$pfx$$l$$sfx $(INSTALL_PREFIX)$(INSTALLTOP)/$(LIBDIR)/engines/$$pfx$$l$$sfx.new; \
+			  fi; \
+			  chmod 555 $(INSTALL_PREFIX)$(INSTALLTOP)/$(LIBDIR)/engines/$$pfx$$l$$sfx.new; \
+			  mv -f $(INSTALL_PREFIX)$(INSTALLTOP)/$(LIBDIR)/engines/$$pfx$$l$$sfx.new $(INSTALL_PREFIX)$(INSTALLTOP)/$(LIBDIR)/engines/$$pfx$$l$$sfx ); \
+		done; \
+	fi
+	@target=install; $(RECURSIVE_MAKE)
+
+tags:
+	ctags $(SRC)
+
+errors:
+	set -e; for l in $(LIBNAMES); do \
+		$(PERL) ../util/mkerr.pl -conf e_$$l.ec \
+			-nostatic -staticloader -write e_$$l.c; \
+	done
+	(cd ccgost; $(MAKE) PERL=$(PERL) errors)
+
+tests:
+
+lint:
+	lint -DLINT $(INCLUDES) $(SRC)>fluff
+	@target=lint; $(RECURSIVE_MAKE)
+
+update: local_depend
+	@if [ -z "$(THIS)" ]; then $(MAKE) -f $(TOP)/Makefile reflect THIS=$@; fi
+	@[ -z "$(THIS)" ] || (set -e; target=update; $(RECURSIVE_MAKE) )
+
+depend: local_depend
+	@if [ -z "$(THIS)" ]; then $(MAKE) -f $(TOP)/Makefile reflect THIS=$@; fi
+	@[ -z "$(THIS)" ] || (set -e; target=depend; $(RECURSIVE_MAKE) )
+local_depend:
+	@[ -z "$(THIS)" ] || $(MAKEDEPEND) -- $(CFLAG) $(INCLUDES) $(DEPFLAG) -- $(PROGS) $(LIBSRC)
+
+dclean:
+	$(PERL) -pe 'if (/^# DO NOT DELETE THIS LINE/) {print; exit(0);}' $(MAKEFILE) >Makefile.new
+	mv -f Makefile.new $(MAKEFILE)
+	@target=dclean; $(RECURSIVE_MAKE)
+
+clean:
+	rm -f *.o *.obj lib tags core .pure .nfs* *.old *.bak fluff
+	@target=clean; $(RECURSIVE_MAKE)
+
+# DO NOT DELETE THIS LINE -- make depend depends on it.
+
+e_chil.o: ${INCLUDES}/asn1.h ${INCLUDES}/bio.h
+e_chil.o: ${INCLUDES}/bn.h ${INCLUDES}/buffer.h
+e_chil.o: ${INCLUDES}/crypto.h ${INCLUDES}/dh.h
+e_chil.o: ${INCLUDES}/dso.h ${INCLUDES}/e_os2.h
+e_chil.o: ${INCLUDES}/ec.h ${INCLUDES}/ecdh.h
+e_chil.o: ${INCLUDES}/ecdsa.h ${INCLUDES}/engine.h
+e_chil.o: ${INCLUDES}/err.h ${INCLUDES}/evp.h
+e_chil.o: ${INCLUDES}/lhash.h ${INCLUDES}/obj_mac.h
+e_chil.o: ${INCLUDES}/objects.h ${INCLUDES}/opensslconf.h
+e_chil.o: ${INCLUDES}/opensslv.h ${INCLUDES}/ossl_typ.h
+e_chil.o: ${INCLUDES}/pem.h ${INCLUDES}/pem2.h
+e_chil.o: ${INCLUDES}/pkcs7.h ${INCLUDES}/rand.h
+e_chil.o: ${INCLUDES}/rsa.h ${INCLUDES}/safestack.h
+e_chil.o: ${INCLUDES}/sha.h ${INCLUDES}/stack.h
+e_chil.o: ${INCLUDES}/symhacks.h ${INCLUDES}/ui.h
+e_chil.o: ${INCLUDES}/x509.h ${INCLUDES}/x509_vfy.h e_chil.c
+e_chil.o: e_chil_err.c e_chil_err.h vendor_defns/hwcryptohook.h
