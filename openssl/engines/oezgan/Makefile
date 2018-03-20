@@ -13,4 +13,4 @@ oezganEngineTester: oezganEngineTester.c
 
 .PHONY: clean
 clean:
-	rm -rf *.o oezganEngineTester
+	rm -rf *.o *.so oezganEngineTester

@@ -29,8 +29,33 @@ int main(){
         printf("%x", rand_buf[i]);
     }
     printf("\n");
-    //free(rand_buf);
 
+    //digest
+    char * str = "Fraunhofer FKIE Wachtberg!";
+    int str_len =  strlen(str);
+    int er = ENGINE_set_default_digests(e);
+    printf("ENGINE SETTING DEFAULT DIGESTS %d\n",er);
+
+    unsigned char digest[32];
+    unsigned int digestSize = -1;
+
+    EVP_MD_CTX *evp_ctx;
+    //evp_ctx = EVP_MD_CTX_create();
+    evp_ctx = EVP_MD_CTX_new();
+
+    er = EVP_DigestInit(evp_ctx, EVP_sha256());
+    printf("Digest INIT %d\n",er);
+/*
+    er = EVP_DigestUpdate(evp_ctx, (unsigned char*)str, str_len);
+    printf("Digest Update %d\n",er);
+    er = EVP_DigestFinal(evp_ctx, digest, &digestSize);
+    printf("Digest Final %d Digest size:%d\n",er,digestSize);
+    for(int i= 0; i< digestSize; i++) {
+        printf("%x", digest[i]);
+    }
+    printf("\n");
+    */
+    EVP_MD_CTX_destroy(evp_ctx);
     return 0;
 }
 

@@ -14,40 +14,46 @@ static int sansec_engine_sm3_update(EVP_MD_CTX *ctx, const void *data, size_t co
 /*rand number functions*/
 int get_random_bytes(unsigned char *buffer, int num);
 
-
+//rand
 int get_random_bytes(unsigned char *buffer, int num){
     printf("sansec engine random length %d\n", num);
     memset(buffer, 1, num);
     return 1;
 }
-
 int sansec_random_status(void){
     return 1;
 }
+RAND_METHOD sansec_random_method = {
+    NULL,
+    get_random_bytes,
+    NULL,
+    NULL,
+    NULL,
+    sansec_random_status
+};
 
 //sm3
 static int sansec_engine_sm3_init(EVP_MD_CTX *ctx){
-    EVP_MD_CTX_set_update_fn(ctx, &sansec_engine_sm3_update);
+    //EVP_MD_CTX_set_update_fn(ctx, &sansec_engine_sm3_update);
     printf("initialized SM3\n");
     return 1;
 }
 static int sansec_engine_sm3_update(EVP_MD_CTX *ctx, const void *data, size_t count){
     printf("SM3 update \n");
-    unsigned char *digest = (unsigned char*)malloc(sizeof(unsigned char)*32);
+    /* unsigned char *digest = (unsigned char*)malloc(sizeof(unsigned char)*32);
     memset(digest, 2, 32);
     count = 32;
     //ctx->md_data = digest;
     void *md_data = EVP_MD_CTX_md_data(ctx);
     md_data = digest;
-    return 1;
+ */    return 1;
 }
 static int sansec_engine_sm3_final(EVP_MD_CTX *ctx, unsigned char *md){
-    printf("SM3 final size of EVP_MD: %d\n", sizeof(EVP_MD *));
+    printf("SM3 final size of EVP_MD: %ld\n", sizeof(EVP_MD *));
     //printf("SM3 final\n");
-    memcpy(md, (unsigned char*)EVP_MD_CTX_md_data(ctx), 32);
+    //memcpy(md, (unsigned char*)EVP_MD_CTX_md_data(ctx), 32);
     return 1;
 }
-
 static EVP_MD *sansec_engine_sm3_method = {
      NID_sm3,
      NID_undef,
@@ -64,15 +70,6 @@ static EVP_MD *sansec_engine_sm3_method = {
      64,
      32,
      NULL
-};
-
-RAND_METHOD sansec_random_method = {
-    NULL,
-    get_random_bytes,
-    NULL,
-    NULL,
-    NULL,
-    sansec_random_status
 };
 
 //sm3 digest selector function
@@ -103,9 +100,9 @@ int bind_helper(ENGINE *e, const char *id){
         !ENGINE_set_name(e, engine_sansec_name)||
         !ENGINE_set_init_function(e, sansec_init) ||
         //rand
-        !ENGINE_set_RAND(e, &sansec_random_method) ||
+        !ENGINE_set_RAND(e, &sansec_random_method) 
         //sm3
-        ENGINE_set_digests(e, &sansec_engine_digest_selector)
+       //ENGINE_set_digests(e, &sansec_engine_digest_selector)
         )
             return 0;
     return 1;
