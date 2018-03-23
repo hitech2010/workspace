@@ -19,3 +19,6 @@ ec: ec.o
 
 ec:
 	$(CC) $(CFLAGS) -o $@ $< $(LDFLAGS)
+.PHONY: clean
+clean:
+	rm -rf *.o ec

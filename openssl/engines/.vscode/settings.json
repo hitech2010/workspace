@@ -2,6 +2,8 @@
     "files.associations": {
         "evp.h": "c",
         "ossl_typ.h": "c",
-        "aes.h": "c"
+        "aes.h": "c",
+        "ecdsa.h": "c",
+        "ec.h": "c"
     }
 }

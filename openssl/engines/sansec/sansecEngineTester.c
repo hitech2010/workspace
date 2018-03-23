@@ -2,6 +2,11 @@
 #include<stdio.h>
 #include<string.h>
 
+void rand_test();
+void sm3_test();
+void sm4_encrypt();
+void sm4_decrypt();
+
 void hex_print(const char* type, const unsigned char* buf, size_t len){
     fprintf(stdout, "%s: ", type);
     size_t i;
@@ -34,26 +39,26 @@ int main(){
     printf("Engine name: %s,  init result: %d\n", ENGINE_get_name(e), r);
     //printf("Engine name: %s\n", ENGINE_get_name(e));
 
+/*
     //rand
     printf("*************************************\n");
     printf("************rand test****************\n");
     ENGINE_set_default_RAND(e);
     rand_test();
-
     //sm3
     printf("*************************************\n");
     printf("************sm3 test****************\n");
     ENGINE_set_default_digests(e);
-    sm3_digest();
+    sm3_test();
 
    
-
     //sm4
     printf("*************************************\n");
     printf("************sm4 test****************\n");
     ENGINE_set_default_ciphers(e);
     sm4_encrypt();
     sm4_decrypt();
+*/
 
     return 0;
 }
@@ -64,23 +69,20 @@ void rand_test(){
     hex_print("rand", rand_buf, 5);
 }
 //*************sm3 test
-void sm3_digest(){ 
+void sm3_test(){ 
     char *str="hello world!";
     int len = strlen(str);
-    unsigned char digest[32];
+    unsigned char digest[32]={0};
     int digestSize = -1;
 
-    EVP_MD_CTX *sm3_ctx = EVP_MD_CTX_new();
-    printf("EVP_MD_CTX_new....\n");
-    EVP_DigestInit_ex(sm3_ctx, EVP_sm3(), NULL);
-    printf("DigestInit_ex...\n");
-    EVP_DigestUpdate(sm3_ctx, str, len);
-    printf("DigestUpdate...\n");
-    EVP_DigestFinal_ex(sm3_ctx, digest, &digestSize);
-    printf("DigestFinal_ex...\n");
+    EVP_MD_CTX *ctx = EVP_MD_CTX_new();
+    OPENSSL_assert(ctx != NULL);
+    EVP_DigestInit_ex(ctx, EVP_sm3(), NULL);
+    EVP_DigestUpdate(ctx, (unsigned char*)str, len);
+    EVP_DigestFinal_ex(ctx, digest, &digestSize);
 
     hex_print("SM3 Digest", digest, digestSize);
-    EVP_MD_CTX_free(sm3_ctx);
+    EVP_MD_CTX_free(ctx);
 }
 //************sm4 test
 const unsigned char key[16] = {
@@ -99,14 +101,10 @@ void sm4_encrypt(){
 
     //sm4 encrypt
     EVP_CIPHER_CTX *ctx = EVP_CIPHER_CTX_new();
-    printf("EVP_CIPHER_CTX_new....\n");
     EVP_EncryptInit_ex(ctx, EVP_sm4_ecb(), NULL, key, iv);
-    printf("EncryptInit_ex...\n");
     EVP_EncryptUpdate(ctx, encData, &outl, plaintext, plainLen);
-    printf("EncryptUpdate...\n");
     encl = outl;
     EVP_EncryptFinal_ex(ctx, encData+outl, &outl);
-    printf("EncryptFinal_ex...\n");
     encl+=outl;
 
     hex_print("sm4 ciphertext", encData, encl);
@@ -125,7 +123,6 @@ void sm4_decrypt(){
 
     //sm4_decrypt
     EVP_CIPHER_CTX *ctx = EVP_CIPHER_CTX_new();
-
     EVP_DecryptInit_ex(ctx, EVP_sm4_ecb(), NULL, key, iv);
     EVP_DecryptUpdate(ctx, decData, &outl, ciphertext, cipherl);
     decl = outl;
@@ -133,7 +130,8 @@ void sm4_decrypt(){
     decl+=outl;
     decData[decl] = '\0';
 
-    hex_print("sm4 plaintext bytes:", decData, decl);
+   // hex_print("sm4 plaintext bytes:", decData, decl);
     printf("plaintext: %s\n", decData);
+    
     EVP_CIPHER_CTX_free(ctx);
 }

@@ -83,6 +83,8 @@ void sm4_decrypt(){
     EVP_CIPHER_CTX_free(ctx);
 }
 
+//sm2 TODO
+
 //main func
 int main(){
     //sm3_test();

@@ -1,6 +1,8 @@
 #include <string.h>
 #include<openssl/engine.h>
 #include<openssl/ossl_typ.h>
+#include<openssl/ecdsa.h>
+#include "oezganEngine.h"
 
 static const char *engine_oezgan_id = "oezgan";
 static const char *engine_oezgan_name = "oezgan engine by FKIE";
@@ -24,10 +26,11 @@ RAND_METHOD oezgan_random_method = {
     NULL,
     oezgan_random_status
 };
+static int oezgan_engine_sha256_update(EVP_MD_CTX *ctx,const void *data,size_t count); 
 
 //Digests
 static int oezgan_engine_sha256_init(EVP_MD_CTX *ctx) {
-    //EVP_MD_CTX_update_fn(ctx);
+    EVP_MD_CTX_set_update_fn(ctx, oezgan_engine_sha256_update);
     printf("initialized! SHA256\n");
     return 1;
 }
@@ -35,61 +38,37 @@ static int oezgan_engine_sha256_init(EVP_MD_CTX *ctx) {
 static int oezgan_engine_sha256_update(EVP_MD_CTX *ctx,const void *data,size_t count) 
 {
     printf("SHA256 update \n");
-    /*
-    unsigned char * digest256 = (unsigned char*) malloc(sizeof(unsigned char)*32);
-    memset(digest256,2,32);
-    count = 32;
-    unsigned char *md_data = EVP_MD_CTX_md_data(ctx);
-    md_data = digest256;
-    */
     return 1;
 }
 
 static int oezgan_engine_sha256_final(EVP_MD_CTX *ctx,unsigned char *md) {
-    printf("SHA256 final size of EVP_MD: %d\n", sizeof(EVP_MD *));
-    //memcpy(md,(unsigned char*)EVP_MD_CTX_md_data(ctx),32);
+    printf("SHA256 final\n");
     return 1;
 }
 
 int oezgan_engine_sha256_copy(EVP_MD_CTX *to, const EVP_MD_CTX *from)
 {
-    printf("Copy SHA256\n");
-    /*
-    if (EVP_MD_CTX_md_data(to) && EVP_MD_CTX_md_data(from)) {
-        memcpy(EVP_MD_CTX_md_data(to), EVP_MD_CTX_md_data(from),sizeof(EVP_MD_CTX_md_data(from)));
-    }
-    */
+    printf("SHA256 copy\n");
     return 1;
 }
 
 static int oezgan_engine_sha256_cleanup(EVP_MD_CTX *ctx) {
     printf("SHA256 cleanup\n");
-    /*
-    if (EVP_MD_CTX_md_data(ctx))
-        memset(EVP_MD_CTX_md_data(ctx), 0, 32);
-        */
     return 1;
 }
-static EVP_MD *oezgan_engine_sha256_method=  {
-        NID_sha256,
-        NID_sha256WithRSAEncryption,
-        32,
-        //EVP_MD_FLAG_PKEY_METHOD_SIGNATURE,
-        NULL,
-        oezgan_engine_sha256_init,
-        oezgan_engine_sha256_update,
-        oezgan_engine_sha256_final,
-        oezgan_engine_sha256_copy,
-        oezgan_engine_sha256_cleanup,
-        /* FIXME: prototype these some day */
-        //NULL,
-        //NULL,
-        //{NID_undef, NID_undef, 0, 0, 0},
-        64, /*Block Size*/
-        32, /* how big does the ctx->md_data need to be */
-        /* control function */
-        NULL,
-};
+static EVP_MD *sansec_sha256(int nid){
+    EVP_MD *md;
+    if(((md = EVP_MD_meth_new(nid, NID_sha256WithRSAEncryption)) == NULL)
+        || !EVP_MD_meth_set_init(md, oezgan_engine_sha256_init)
+        || !EVP_MD_meth_set_update(md, oezgan_engine_sha256_update)
+        || !EVP_MD_meth_set_final(md, oezgan_engine_sha256_final)
+        || !EVP_MD_meth_set_copy(md, oezgan_engine_sha256_copy)
+        || !EVP_MD_meth_set_cleanup(md, oezgan_engine_sha256_cleanup)
+        || !EVP_MD_meth_set_input_blocksize(md, 64)
+        || !EVP_MD_meth_set_result_size(md, 32))
+            EVP_MD_meth_free(md);
+    return md;
+}
 static int oezgan_digest_ids[] = {NID_sha256};
 
 static int oezgan_engine_digest_selector(ENGINE *e, const EVP_MD **digest,
@@ -102,13 +81,24 @@ static int oezgan_engine_digest_selector(ENGINE *e, const EVP_MD **digest,
     }
     printf("Digest nid %d requested\n",nid);
     if (nid == NID_sha256) {
-        *digest = oezgan_engine_sha256_method;
+        *digest = sansec_sha256(nid);
     }else {
         ok = 0;
         *digest = NULL;
     }
     return ok;
 }
+
+//ecdsa
+static ECDSA_METHOD *oezgan_engine_ecdsa_method=NULL;
+
+static int setup_ecdsa_method(void){
+    oezgan_engine_ecdsa_method = ECDSA_METHOD_new(NULL);
+    if(oezgan_engine_ecdsa_method = NULL) return 0;
+
+    ECDSA_METHOD_set_name()
+}
+
 
 int oezgan_init(ENGINE *e){
     printf("Oezgan Engine Initailization!\n");
