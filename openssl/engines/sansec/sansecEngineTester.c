@@ -39,26 +39,24 @@ int main(){
     printf("Engine name: %s,  init result: %d\n", ENGINE_get_name(e), r);
     //printf("Engine name: %s\n", ENGINE_get_name(e));
 
-/*
     //rand
     printf("*************************************\n");
     printf("************rand test****************\n");
     ENGINE_set_default_RAND(e);
     rand_test();
+
     //sm3
     printf("*************************************\n");
     printf("************sm3 test****************\n");
     ENGINE_set_default_digests(e);
     sm3_test();
 
-   
     //sm4
     printf("*************************************\n");
     printf("************sm4 test****************\n");
     ENGINE_set_default_ciphers(e);
     sm4_encrypt();
     sm4_decrypt();
-*/
 
     return 0;
 }

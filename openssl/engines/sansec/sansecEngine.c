@@ -28,12 +28,7 @@ int get_random_bytes(unsigned char *buffer, int num){
     return 99;
 }
 int sansec_random_status(void){
-    return 1;#ifdef  __cplusplus
-}
-#endif
-
-
-#endif /* OEZGANENGINE_H_ */
+    return 1;
 }
 RAND_METHOD sansec_random_method = {
     NULL,
@@ -298,12 +293,14 @@ static int sansec_engine_sm2_do_verify(const unsigned char *digest, int digest_l
 
     return 1;
 }
-static ecdsa_method *sansec_engine_sm2_method={
+/*
+static ECDSA_METHOD *sansec_engine_sm2_method={
     "Sansec engine SM2 method",
     sansec_engine_sm2_sign,
     sansec_engine_sm2_sign_setup,
     sansec_engine_sm2_do_verify,
 };
+*/
 
 //ENGINE init
 int sansec_init(ENGINE *e){
@@ -340,7 +337,7 @@ int bind_helper(ENGINE *e, const char *id){
         //sm3
         || !ENGINE_set_digests(e, &sansec_digests)
         //sm2
-        || !ENGINE_set_EC(e, &sansec_engine_sm2_method)
+        //|| !ENGINE_set_EC(e, &sansec_engine_sm2_method)
         )
             return 0;
     return 1;
